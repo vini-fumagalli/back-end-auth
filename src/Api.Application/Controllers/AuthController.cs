@@ -72,4 +72,9 @@ public class AuthController : ControllerBase
         msg = "Usúario ou senha inválidos";
         return BadRequest(new RespostaEntity(false, msg));
     }
+
+    // private async Task<string> GerarJwt(string email)
+    // {
+    //     return "To be continued...";
+    // }
 }
