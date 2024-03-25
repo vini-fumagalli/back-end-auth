@@ -13,4 +13,9 @@
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="5.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Api.Domain\Domain.csproj" />
+    <ProjectReference Include="..\Api.CrossCutting\CrossCutting.csproj" />
+  </ItemGroup>
+
 </Project>
