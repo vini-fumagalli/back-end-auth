@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.CrossCutting.Configuration;
 
@@ -14,15 +17,36 @@ public class IdentityConfig
         service.AddDbContext<IdentityContext>(options =>
         options.UseSqlServer(Environment.GetEnvironmentVariable(chave, EnvironmentVariableTarget.Machine)));
 
-        service.AddIdentityCore<IdentityUser>()
+        service.AddDefaultIdentity<IdentityUser>()
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<IdentityContext>();
-        // .AddTokenProvider<DefaultUserConfirmation<IdentityUser>>("email")
+                .AddDefaultTokenProviders();
 
-        //JWT
+        //JSON WEB TOKEN
 
-        // var appSettingsSection = configuration.GetSection("AppSettings");
-        // service.Configure<AppSettings>(appSettingsSection);
+        var appSettingsSection = configuration.GetSection("AppSettings");
+        service.Configure<AppSettings>(appSettingsSection);
+
+        var appSettings = appSettingsSection.Get<AppSettings>();
+        var key = Encoding.ASCII.GetBytes(appSettings!.Secret);
+
+        service.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.RequireHttpsMetadata = true;
+            x.SaveToken = true;
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidAudience = appSettings.ValidoEm,
+                ValidIssuer = appSettings.Emissor
+            };
+        });
 
     }
 }
