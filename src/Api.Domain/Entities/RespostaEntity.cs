@@ -3,7 +3,7 @@ namespace Api.Domain.Entities;
 public class RespostaEntity
 {
     public bool Sucesso { get; set; }
-    public object? Resposta { get; set; }
+    public object? Data { get; set; }
     public string? Mensagem { get; set; }
 
     public RespostaEntity() { }
@@ -14,7 +14,7 @@ public class RespostaEntity
     )
     {
         Sucesso = sucesso;
-        Resposta = resposta;
+        Data = resposta;
     }
 
     public RespostaEntity(
@@ -33,7 +33,7 @@ public class RespostaEntity
     )
     {
         Sucesso = sucesso;
-        Resposta = resposta;
+        Data = resposta;
         Mensagem = mensagem;
     }
 }
