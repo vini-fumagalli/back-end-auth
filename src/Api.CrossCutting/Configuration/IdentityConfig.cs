@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -21,7 +20,7 @@ public class IdentityConfig
                 .AddRoles<IdentityRole>()
                 .AddDefaultTokenProviders();
 
-        //JSON WEB TOKEN
+        #region JSON WEB TOKEN
 
         var appSettingsSection = configuration.GetSection("AppSettings");
         service.Configure<AppSettings>(appSettingsSection);
@@ -47,6 +46,8 @@ public class IdentityConfig
                 ValidIssuer = appSettings.Emissor
             };
         });
+
+        #endregion 
 
     }
 }
