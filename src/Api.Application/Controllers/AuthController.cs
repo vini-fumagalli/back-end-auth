@@ -51,7 +51,8 @@ public class AuthController : ControllerBase
         {
             await _signInManager.SignInAsync(user, false);
             msg = "Usuário cadastrado com sucesso";
-            return Ok(new RespostaEntity(true, await GerarJwt(registerUser.Email), msg));
+            var data = await GerarJwt(user.Email);
+            return Ok(new RespostaEntity(true, data, msg));
         }
 
         msg = "Falha ao tentar realizar cadastro";
@@ -90,7 +91,7 @@ public class AuthController : ControllerBase
         return "Olá, Você está autenticado :)";
     }
 
-    private async Task<LoginResponseViewModel> GerarJwt(string email)
+    public virtual async Task<LoginResponseViewModel> GerarJwt(string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
         var claims = await _userManager.GetClaimsAsync(user!);
