@@ -1,4 +1,6 @@
 using Api.CrossCutting.Configuration;
+using Api.Data.Context;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<IdentityContext>()
+                .AddDefaultTokenProviders();
+                
 IdentityConfig.ConfigureDependenciesIdentity(builder.Services, builder.Configuration, "DB_CONNECTION_AUTH");
+
 
 var app = builder.Build();
 
