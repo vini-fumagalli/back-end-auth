@@ -16,10 +16,6 @@ public class IdentityConfig
         service.AddDbContext<IdentityContext>(options =>
         options.UseSqlServer(Environment.GetEnvironmentVariable(chave, EnvironmentVariableTarget.Machine)));
 
-        service.AddDefaultIdentity<IdentityUser>()
-                .AddRoles<IdentityRole>()
-                .AddDefaultTokenProviders();
-
         #region JSON WEB TOKEN
 
         var appSettingsSection = configuration.GetSection("AppSettings");
