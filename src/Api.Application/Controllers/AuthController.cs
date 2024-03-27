@@ -4,6 +4,7 @@ using System.Text;
 using Api.CrossCutting.Configuration;
 using Api.Domain.Entities;
 using Api.Domain.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -80,6 +81,13 @@ public class AuthController : ControllerBase
 
         msg = "Usúario ou senha inválidos";
         return BadRequest(new RespostaEntity(false, msg));
+    }
+
+    [Authorize]
+    [HttpGet("saudacao")]
+    public string Saudacao()
+    {
+        return "Olá, Você está autenticado :)";
     }
 
     private async Task<LoginResponseViewModel> GerarJwt(string email)
