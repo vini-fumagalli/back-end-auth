@@ -36,6 +36,7 @@ public class IdentityConfig
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
+                ClockSkew = TimeSpan.Zero,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidAudience = appSettings.ValidoEm,
