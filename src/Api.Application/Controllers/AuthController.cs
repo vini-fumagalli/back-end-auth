@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("saudacao")]
+    [HttpGet("saudacao")]   
     public string Saudacao()
     {
         return "Olá, Você está autenticado :)";
@@ -121,7 +121,6 @@ public class AuthController : ControllerBase
             Subject = identityClaims,
             Expires = DateTime.UtcNow.AddHours(_appSettings.ExpiracaoHoras),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-
         });
 
         var encodedToken = tokenHandler.WriteToken(token);
