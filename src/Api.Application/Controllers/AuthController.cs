@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
 
         if (!ModelState.IsValid) return BadRequest();
 
-        var user = new IdentityUser
+        var user = new IdentityUser       
         {
             UserName = registerUser.Email,
             Email = registerUser.Email,
@@ -50,9 +50,8 @@ public class AuthController : ControllerBase
         if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, false);
-            msg = "Usuário cadastrado com sucesso";
-            var data = await GerarJwt(user.Email);
-            return Ok(new RespostaEntity(true, data, msg));
+            msg = "Usuário cadastrado e logado com sucesso";
+            return Ok(new RespostaEntity(true, await GerarJwt(user.Email), msg));
         }
 
         msg = "Falha ao tentar realizar cadastro";
@@ -70,7 +69,7 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            msg = "Usuário logado com sucesso";
+            msg = "Login realizado com sucesso";
             return Ok(new RespostaEntity(true, await GerarJwt(loginUser.Email), msg));
         }
 
@@ -84,11 +83,12 @@ public class AuthController : ControllerBase
         return BadRequest(new RespostaEntity(false, msg));
     }
 
-    [Authorize]
+    [ClaimsAuthorize("Administrador", "Poder Supremo")]
     [HttpGet("saudacao")]   
-    public string Saudacao()
+    public ActionResult<RespostaEntity> Saudacao()
     {
-        return "Olá, Você está autenticado :)";
+        var data = "Olá, Você está autenticado :)";
+        return Ok(new RespostaEntity(true, data));
     }
 
     public virtual async Task<LoginResponseViewModel> GerarJwt(string email)
@@ -96,6 +96,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(email);
         var claims = await _userManager.GetClaimsAsync(user!);
         var userRoles = await _userManager.GetRolesAsync(user!);
+        var userClaims = new List<Claim>(claims);
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user!.Id));
         claims.Add(new Claim(JwtRegisteredClaimNames.Email, user!.Email!));
@@ -128,12 +129,12 @@ public class AuthController : ControllerBase
         return new LoginResponseViewModel
         {
             AccessToken = encodedToken,
-            ExpiresIn = TimeSpan.FromHours(_appSettings.ExpiracaoHoras).TotalSeconds,
+            ExpiresAt = DateTime.UtcNow.AddHours(_appSettings.ExpiracaoHoras).ToLocalTime(),
             UserToken = new UserTokenViewModel
             {
                 Id = user.Id,
                 Email = user.Email!,
-                Claims = claims.Select(c => new ClaimViewModel { Type = c.Type, Value = c.Value })
+                Claims = userClaims.Select(c => new ClaimViewModel { Type = c.Type, Value = c.Value })
             }
         };
     }

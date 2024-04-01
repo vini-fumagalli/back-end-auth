@@ -19,15 +19,6 @@ public class RespostaEntity
 
     public RespostaEntity(
         bool sucesso,
-        string mensagem
-    )
-    {
-        Sucesso = sucesso;
-        Mensagem = mensagem;
-    }
-
-    public RespostaEntity(
-        bool sucesso,
         object? resposta,
         string mensagem
     )
