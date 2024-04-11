@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Api.CrossCutting.Configuration;
 using Api.Domain.Entities;
+using Api.Domain.Interfaces.Repositories;
 using Api.Domain.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,16 +20,19 @@ public class AuthController : ControllerBase
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly AppSettings _appSettings;
+    private readonly ICodAutRepository _codAutRepository;
 
     public AuthController(
         SignInManager<IdentityUser> signInManager,
         UserManager<IdentityUser> userManager,
-        IOptions<AppSettings> appSettings
+        IOptions<AppSettings> appSettings,
+        ICodAutRepository codAutRepository
     )
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _appSettings = appSettings.Value;
+        _codAutRepository = codAutRepository;
     }
 
     [HttpPost("sign-up")]
@@ -38,15 +42,40 @@ public class AuthController : ControllerBase
 
         if (!ModelState.IsValid) return BadRequest();
 
-        var user = new IdentityUser       
+        var user = await _userManager.FindByEmailAsync(registerUser.Email);
+        if (user == null)
         {
-            UserName = registerUser.Email,
-            Email = registerUser.Email,
+            msg = "Esse usuário já existe no sistema";
+            return Conflict(msg);
+        }
+
+        await _codAutRepository.GerarCodEnviarEmail(registerUser.Email);
+        return Ok(new RespostaEntity
+        {
+            Sucesso = true,
+            Mensagem = "Código de autenticação enviado no seu email"
+        });
+    }
+
+    [HttpPost("cod-aut")]
+    public async Task<ActionResult<RespostaEntity>> CodAut(CodAutViewModel vm)
+    {
+        string msg;
+
+        if (!await _codAutRepository.CodigoValido(vm))
+        {
+            msg = "Código inválido";
+            return NotFound(msg);
+        }
+
+        var user = new IdentityUser
+        {
+            UserName = vm.Email,
+            Email = vm.Email,
             EmailConfirmed = true
         };
 
-        var result = await _userManager.CreateAsync(user, registerUser.Password);
-
+        var result = await _userManager.CreateAsync(user, vm.Password);
         if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, false);
@@ -54,8 +83,8 @@ public class AuthController : ControllerBase
             return Ok(new RespostaEntity(true, await GerarJwt(user.Email), msg));
         }
 
-        msg = "Falha ao tentar realizar cadastro";
-        return BadRequest(new RespostaEntity(false, msg));
+        msg = "Erro ao realizar cadastro de usuário";
+        return BadRequest(msg);
     }
 
     [HttpPost("sign-in")]
@@ -84,7 +113,7 @@ public class AuthController : ControllerBase
     }
 
     [ClaimsAuthorize("Administrador", "Poder Supremo")]
-    [HttpGet("saudacao")]   
+    [HttpGet("saudacao")]
     public ActionResult<RespostaEntity> Saudacao()
     {
         var data = "Olá, Você está autenticado :)";
