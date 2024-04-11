@@ -66,11 +66,9 @@ public class CodAutRepository : ICodAutRepository
     {
         var smtpHost = "smtp.office365.com";
         var smtpPort = 587;
-        //**criar outro email**
-        var smtpUsername = "vinifumagalli_@hotmail.com";
-        var smtpPassword = "vi202020";
-
-        string toAdress = userEmail;
+        var smtpUsername = "app.angular.vini.fumagalli@hotmail.com";
+        var smtpPassword = Environment.GetEnvironmentVariable("EMAIL_COD_AUT_PASSWORD", EnvironmentVariableTarget.Machine);
+        var toAdress = userEmail;
 
         var message = new MailMessage(smtpUsername, toAdress)
         {
