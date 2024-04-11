@@ -1,4 +1,5 @@
 using Api.CrossCutting.Configuration;
+using Api.CrossCutting.DependencyInjection;
 using Api.Data.Context;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,15 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
                 {
                     options.Password.RequireUppercase = false;
                     options.Password.RequireNonAlphanumeric = false;
                 })
                 .AddEntityFrameworkStores<IdentityContext>()
                 .AddDefaultTokenProviders();
-                
-IdentityConfig.ConfigureDependenciesIdentity(builder.Services, builder.Configuration, "DB_CONNECTION_AUTH");
+
+var enviromentVariable = "DB_CONNECTION_AUTH";
+IdentityConfig.ConfigureDependenciesIdentity(builder.Services, builder.Configuration, enviromentVariable);
+ConfigureRepository.ConfigureDependenciesRepository(builder.Services, enviromentVariable);
 
 
 var app = builder.Build();
