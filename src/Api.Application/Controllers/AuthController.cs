@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid) return BadRequest();
 
         var user = await _userManager.FindByEmailAsync(registerUser.Email);
-        if (user == null)
+        if (user != null)
         {
             msg = "Esse usuário já existe no sistema";
             return Conflict(msg);
@@ -112,7 +112,19 @@ public class AuthController : ControllerBase
         return BadRequest(new RespostaEntity(false, msg));
     }
 
-    [ClaimsAuthorize("Administrador", "Poder Supremo")]
+    [Authorize]
+    [HttpPost("add-claim")]
+    public async Task<ActionResult<RespostaEntity>> CreateClaim(CreateClaimViewModel vm)
+    {
+        var user = await _userManager.FindByEmailAsync(vm.User);
+        if(user == null) return NotFound();
+
+        var res = await _userManager.AddClaimAsync(user, new Claim(vm.Type, vm.Value));
+
+        return res.Succeeded ? Ok(new RespostaEntity(true, await GerarJwt(vm.User))) : BadRequest();
+    }
+
+    [ClaimsAuthorize("Administrador", "")]
     [HttpGet("saudacao")]
     public ActionResult<RespostaEntity> Saudacao()
     {
