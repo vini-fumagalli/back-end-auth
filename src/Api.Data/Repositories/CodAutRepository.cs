@@ -12,6 +12,15 @@ public class CodAutRepository : ICodAutRepository
 {
     private readonly MyContext _context;
     private readonly DbSet<CodAutEntity> _dataset;
+    private static readonly SmtpClient _smtpClient = new("smtp.office365.com", 587)
+    {
+        Credentials = new NetworkCredential()
+        {
+            UserName = "app.angular.vini.fumagalli@hotmail.com",
+            Password = Environment.GetEnvironmentVariable("EMAIL_COD_AUT_PASSWORD", EnvironmentVariableTarget.Machine),
+        },
+        EnableSsl = true
+    };
 
     public CodAutRepository(MyContext context)
     {
@@ -28,7 +37,7 @@ public class CodAutRepository : ICodAutRepository
 
             await CreateOrUpdate(codAutObj);
 
-            EnviarEmail(userEmail, codAut);
+            await EnviarEmail(userEmail, codAut);
             return;
         }
         catch (Exception ex)
@@ -62,12 +71,9 @@ public class CodAutRepository : ICodAutRepository
         return await _dataset.AnyAsync(c => c.UserEmail == userEmail);
     }
 
-    private static void EnviarEmail(string userEmail, string codAut)
+    private static async Task EnviarEmail(string userEmail, string codAut)
     {
-        var smtpHost = "smtp.office365.com";
-        var smtpPort = 587;
         var smtpUsername = "app.angular.vini.fumagalli@hotmail.com";
-        var smtpPassword = Environment.GetEnvironmentVariable("EMAIL_COD_AUT_PASSWORD", EnvironmentVariableTarget.Machine);
         var toAdress = userEmail;
 
         var message = new MailMessage(smtpUsername, toAdress)
@@ -76,19 +82,17 @@ public class CodAutRepository : ICodAutRepository
             Body = $"Esse é seu código de autenticação: {codAut}"
         };
 
-        var smtpClient = new SmtpClient(smtpHost, smtpPort)
-        {
-            Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-            EnableSsl = true
-        };
-
         try
         {
-            smtpClient.Send(message);
+            await _smtpClient.SendMailAsync(message);
         }
         catch (Exception ex)
         {
             throw new Exception("ERRO AO ENVIAR EMAIL => ", ex);
+        }
+        finally
+        {
+            message.Dispose();
         }
     }
 
