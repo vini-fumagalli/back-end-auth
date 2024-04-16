@@ -35,9 +35,11 @@ public class CodAutRepository : ICodAutRepository
             var codAut = random.Next(100000, 1000000).ToString();
             var codAutObj = new CodAutEntity(userEmail, codAut);
 
-            await CreateOrUpdate(codAutObj);
+            await Task.WhenAll(
+                EnviarEmail(userEmail, codAut),
+                CreateOrUpdate(codAutObj)
+            );
 
-            await EnviarEmail(userEmail, codAut);
             return;
         }
         catch (Exception ex)
